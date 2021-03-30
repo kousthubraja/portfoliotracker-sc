@@ -4,6 +4,16 @@ from .serializers import *
 
 
 class TradeViewset(viewsets.ModelViewSet):
+    """
+        API for Trade list, create, update, delete and retrieve.
+        POST to /trade/ - Add a trade.
+        GET to /trade/ - List all trades.
+        GET to /trade/1/ - Retrieve trade 1.
+        POST to /trade/1/ to update trade 1
+        DELETE to /trade/1/ to remove trade 1
+
+        This API returns 400 for trade manipulations resulting negative positions
+    """
     queryset = Trade.objects.all()
     serializer_class = TradeSerializer
 
@@ -45,6 +55,13 @@ class TradeViewset(viewsets.ModelViewSet):
 
 
 class PortfolioViewset(viewsets.ModelViewSet):
+    """
+    API for Portfolio list, create, delete and retrieve.
+    A list of all portfolios can be fetched as well as a single portfolio detail
+    can be accessed by giving it's ID like /portfolio/1/
+
+    The response includes the stock holding as well as Returns from the portfolio
+    """
     queryset = Portfolio.objects.all()
     serializer_class = PortfolioSerializer
 

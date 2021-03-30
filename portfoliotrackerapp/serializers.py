@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
-from .logic import validate_trade
 from .models import *
 
 
@@ -45,8 +43,16 @@ class TradeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         try:
-            validate_trade(attrs['portfolio'], attrs['security'],
-                           attrs['trade_type'], attrs['count'])
+            positions_on_security = Position.objects.filter(portfolio=attrs['portfolio'],
+                                                            security=attrs['security'])
+            # Validate the trade for short selling
+            if attrs['trade_type'] == Trade.SELL:
+                if len(positions_on_security) == 1:
+                    position = positions_on_security[0]
+                    if position.count < attrs['count']:
+                        raise Exception('Sell quantity more than holdings')
+                else:
+                    raise Exception('Cannot sell securities not being held')
         except:
             raise serializers.ValidationError('This trade results in invalid position')
         return attrs
