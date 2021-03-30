@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import *
 
+""" Serializer has most of our business logic """
+
 
 class PortfolioSerializer(serializers.ModelSerializer):
     stocks = serializers.SerializerMethodField()
@@ -14,22 +16,13 @@ class PortfolioSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_returns(self, portfolio):
+        # Returns calculations are done during serialization.
         positions = Position.objects.filter(portfolio=portfolio)
         returns = 0
         for position in positions:
+            # We assume current price of every stock as 100
             returns += (position.average_price - 100) * position.count
         return returns
-
-    class Meta:
-        model = Portfolio
-        fields = '__all__'
-
-
-class PortfolioAddSerializer(serializers.ModelSerializer):
-    date_last_rebalanced = serializers.SerializerMethodField()
-
-    def get_created_date(self, portfolio):
-        return portfolio.created_date.strftime("%Y-%m-%d")
 
     class Meta:
         model = Portfolio
@@ -83,6 +76,8 @@ class TradeSerializer(serializers.ModelSerializer):
         return trade
 
     def update(self, trade, validated_data):
+        # Update is tricky as the security can change. We need to validate the positions for new as well
+        # as old security when the security change for a trade
         trades_on_security = Trade.objects.filter(portfolio=trade.portfolio,
                                                   security=trade.security) \
             .order_by('trade_time')
@@ -131,8 +126,8 @@ class TradeSerializer(serializers.ModelSerializer):
             average_price = 0
 
         positions_on_security = Position.objects.filter(portfolio=trade.portfolio, security=trade.security)
-        # Todo - Make positions time series and snapshot position at each time there's a change so only trades post
-        # trade to be deleted need to be checked
+        # Ideally positions can be time series snapshots for every new trade. For simplicity, storing only latest now.
+        # Former way helps with lower compute as only positions post that point need to be checked.
         if len(positions_on_security) > 0:
             position = positions_on_security[0]
             position.count = count
