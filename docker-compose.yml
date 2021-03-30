@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  web:
+    environment:
+      - PORTFOLIO_TRACKER_ENV=dev
+    build: .
+    command: gunicorn portfoliotrackerproject.wsgi --bind 0.0.0.0:8444 --log-level debug --timeout 90
+    volumes:
+      - .:/code
+    ports:
+      - "8444:8444"
