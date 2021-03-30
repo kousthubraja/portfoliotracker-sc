@@ -31,7 +31,7 @@ class Trade(models.Model):
     trade_time = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
-        return f"{self.portfolio.name}: {self.security.name}: {self.trade_type}"
+        return f"{self.portfolio.name}: {self.security}: {self.trade_type}"
 
 
 class Position(models.Model):
@@ -41,4 +41,4 @@ class Position(models.Model):
     average_price = models.FloatField()
 
     def __str__(self):
-        return f"{self.portfolio.name} : {self.security.name}"
+        return f"{self.portfolio.name} : {self.security}"
