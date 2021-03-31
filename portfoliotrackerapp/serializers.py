@@ -86,9 +86,12 @@ class TradeSerializer(serializers.ModelSerializer):
         average_price = 0
         for t in trades_on_security:
             if t == trade:
-                t = Trade(trade_type=validated_data['trade_type'],
-                          count=validated_data['count'],
-                          average_price=validated_data['average_price'])
+                if t.security == validated_data['security']:
+                    t = Trade(trade_type=validated_data['trade_type'],
+                              count=validated_data['count'],
+                              trade_price=validated_data['trade_price'])
+                else:
+                    continue
 
             if t.trade_type == Trade.BUY:
                 count += t.count
