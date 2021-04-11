@@ -21,7 +21,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         returns = 0
         for position in positions:
             # We assume current price of every stock as 100
-            returns += (position.average_price - 100) * position.count
+            returns += (100 - position.average_price) * position.count
         return returns
 
     class Meta:
@@ -83,6 +83,7 @@ class TradeSerializer(serializers.ModelSerializer):
             .order_by('trade_time')
 
         count = 0
+        buy_count = 0
         average_price = 0
         for t in trades_on_security:
             if t == trade:
@@ -95,10 +96,11 @@ class TradeSerializer(serializers.ModelSerializer):
 
             if t.trade_type == Trade.BUY:
                 count += t.count
+                buy_count += t.count
                 average_price += t.trade_price * t.count
             else:
                 count -= t.count
-                average_price -= t.trade_price * t.count
+                # average_price -= t.trade_price * t.count
             if count < 0:
                 raise ValidationError('Position becomes invalid on updating this trade')
 
@@ -123,8 +125,8 @@ class TradeSerializer(serializers.ModelSerializer):
                 if count_new_sec < 0:
                     raise ValidationError('Position becomes invalid on updating this trade')
 
-        if count != 0:
-            average_price /= count
+        if buy_count != 0:
+            average_price /= buy_count
         else:
             average_price = 0
 
